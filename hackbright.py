@@ -36,23 +36,50 @@ def make_new_student(first_name, last_name, github):
     Given a first name, last name, and GitHub account, add student to the
     database and print a confirmation message.
     """
-    pass
+    
+    QUERY = """INSERT INTO students VALUES (:first_name, :last_name, :github)"""
+    db_cursor = db.session.execute(QUERY, {'first_name': first_name, 'last_name' : last_name, 'github': github})
+    db.session.commit()
+
+    print "Successfully added student: {} {}".format(first_name, last_name)
 
 
 def get_project_by_title(title):
     """Given a project title, print information about the project."""
-    pass
+    
+    QUERY = """
+    SELECT title, description
+    FROM projects
+    WHERE title = :title
+    """
+
+    db_cursor = db.session.execute(QUERY, {'title': title})
+    row = db_cursor.fetchone()
+
+    print "{}: {}".format(row[0], row[1])
 
 
 def get_grade_by_github_title(github, title):
     """Print grade student received for a project."""
-    pass
+    
+    QUERY = """
+    SELECT grade 
+    FROM grades
+    WHERE student_github = :github AND project_title = :title
+    """
+
+    db_cursor = db.session.execute(QUERY, {'github': github, 'title': title})
+    row = db_cursor.fetchone()
+
+    print "{}".format(row[0])
 
 
 def assign_grade(github, title, grade):
     """Assign a student a grade on an assignment and print a confirmation."""
+    
+    # QUERY = """
+    # SELECT 
     pass
-
 
 def handle_input():
     """Main loop.
@@ -76,6 +103,14 @@ def handle_input():
             first_name, last_name, github = args   # unpack!
             make_new_student(first_name, last_name, github)
 
+        elif command == "title":
+            title = args[0]
+            get_project_by_title(title)
+
+        elif command == "student_grade":
+            github, project = args
+            get_grade_by_github_title(github, project)
+
         else:
             if command != "quit":
                 print "Invalid Entry. Try again."
@@ -85,6 +120,6 @@ if __name__ == "__main__":
     app = Flask(__name__)
     connect_to_db(app)
 
-    # handle_input()
+    handle_input()
 
     db.session.close()
